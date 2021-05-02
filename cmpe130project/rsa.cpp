@@ -1,37 +1,52 @@
 #include "rsa.h"
 
-//StackOverflow help to determine whether a number is prime
 
+//Checks to see whether the given value is prime
+//Code retrived from geeksforgeeks.com
 bool rsa::isPrime(int val) {
-	if (val % 2 == 0) return val == 2;
-	if (val % 3 == 0) return val == 3;
-	int step = 4;
-	int m = (int)pow(val, .5) + 1;
 
-	for (int i = 5; i < m; step = 6 - step, i += step) {
-		if (val % i == 0) {
+	// Corner cases
+	if (val <= 1)
+		return false;
+	if (val <= 3)
+		return true;
+
+	// This is checked so that we can skip
+	// middle five numbers in below loop
+	if (val % 2 == 0 || val % 3 == 0)
+		return false;
+
+	for (int i = 5; i * i <= val; i = i + 6)
+		if (val % i == 0 || val % (i + 2) == 0)
 			return false;
-		}
-	}
+
 	return true;
 }
 
+//Fucntion for the extended Euclidean Algorithm to calculate for the greatest common denominator
+//Code retrived from geeksforgeeks.com
 int rsa::gcd(int a, int b, int* x, int* y) {
+	
+	//Base case
 	if (a == 0) {
 		*x = 0, * y = 1;
 		return b;
 	}
 
+	//Stores values of recursive call
 	int x1, y1;
-
+	//Recurive call of algorithm
 	int g = gcd(b%a,a,&x1,&y1);
 
+	//Update values of x and y with the results of the recursive call
 	*x = y1 - (b / a) * x1;
 	*y = x1;
 
 	return g;
 }
 
+//Modulo Inverse of values a and b
+//Code retrived from geeksforgeeks.com
 int rsa::modInverse(int a, int b) {
 	int x, y;
 	int g = gcd(a, b, &x, &y);
@@ -40,13 +55,16 @@ int rsa::modInverse(int a, int b) {
 		return -1;
 	}
 	else {
+		//B is added to handle negative x values
 		int res = (x % b + b) % b;
 		return res;
 	}
 }
 
-int rsa::kthPrime(int val) {
+//Determines the kth prime number
+int rsa::calculatePrime(int val) {
 	int x, count;
+	//Loops until the kth prime number is reached
 	for (x = 2, count = 0; count < val; x++) {
 		if (isPrime(x)) {
 			count++;
@@ -56,6 +74,8 @@ int rsa::kthPrime(int val) {
 	return x - 1;
 }
 
+//Calculates the modular exponent
+//Code retrived from geeksforgeeks.com
 ull rsa::emod(ull a, ull b, ull c) {
 	if (b == 0) {
 		return 1;
@@ -69,10 +89,11 @@ ull rsa::emod(ull a, ull b, ull c) {
 	}
 }
 
+//This function encrypts and decrypts the message vector based on the values inputed to the emod function
 vector<ull> rsa::encrypt_decrypt(vector<ull> message, ull nd, ull e) {
 	vector<ull> c;
 
-	for (vector<unsigned long long>::iterator it = message.begin(); it != message.end(); ++it) {
+	for (vector<ull>::iterator it = message.begin(); it != message.end(); ++it) {
 		ull v = emod(*it,e,nd);
 		c.push_back(v);
 	}
@@ -80,21 +101,21 @@ vector<ull> rsa::encrypt_decrypt(vector<ull> message, ull nd, ull e) {
 	return c;
 }
 
-
+//Display vectors holding int values
 void rsa::displayInt(vector<int> v, int inc) {
 	for (vector<int>::iterator it = v.begin(); it != v.end(); it += inc)
 	{
 		std::cout << "'" << *it << "'" << " ";
 	}
 }
-
+//Display vectors holding char values
 void rsa::displayChar(vector<char> v, int inc) {
 	for (vector<char>::iterator it = v.begin(); it != v.end(); it += inc)
 	{
 		std::cout << "'" << *it << "'" << " ";
 	}
 }
-
+//Display vectors holding unsigned long long values
 void rsa::displayULL(vector<ull> v, int inc) {
 	for (vector<ull>::iterator it = v.begin(); it != v.end(); it += inc)
 	{

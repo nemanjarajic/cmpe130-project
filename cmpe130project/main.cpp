@@ -1,18 +1,23 @@
 #include "rsa.h"
 
 int main() {
+
 	srand(time(NULL));
+
+	//initialize variables for message, ASCII representation of the message, int representation of the message
 	string message;
 	vector<int> messageVector1;
 	vector<char> messageVector2;
 	vector<ull> messageBlks;
 	vector<int> recoverMessage;
 
+	//Initialize the rsa class as encryption1
 	rsa encryption1;
 
 	cout << "Enter message: ";
 	getline(cin, message);
 
+	//Fill vectors messageVector1 and messageVector2 with the correct values
 	for (int i = 0; i < message.length(); i++)       
 	{
 		messageVector2.push_back((message[i]));
@@ -24,6 +29,7 @@ int main() {
 		}
 	}
 
+	//Display the vectors
 	std::cout << "Message:              ";
 	encryption1.displayChar(messageVector2, 1);                                                                   
 	std::cout << std::endl;
@@ -32,8 +38,9 @@ int main() {
 	encryption1.displayInt(messageVector1, 1);
 	std::cout << std::endl;
 
+	//Converts the values of the int vector to message blocks
 	if (messageVector1.size() % 2 == 0) {
-		for (std::vector<int>::iterator it = messageVector1.begin(); it != messageVector1.end(); it = it + 2)  // converting numbers into message blocks
+		for (std::vector<int>::iterator it = messageVector1.begin(); it != messageVector1.end(); it = it + 2)  
 		{
 			messageBlks.push_back(*it * 100 + (*(it + 1)));
 		}
@@ -47,44 +54,60 @@ int main() {
 		messageBlks.push_back(*it * 100);
 	}
 
-	cout << "Message Blocks:        ";                                                            // displaying message blocks
+	//Displays the message blocks
+	cout << "Message Blocks:        ";                                                            
 	encryption1.displayULL(messageBlks, 1);
-	std::cout << std::endl;
+	cout << std::endl;
 
-	unsigned long nthRandPrime1 = 1000 + (std::rand() % (2000 - 1000 + 1));                            // a random number between 1000 and 2000
-	unsigned long nthRandPrime2 = 1000 + (std::rand() % (2000 - 1000 + 1));                            // a random number between 1000 and 2000
+	//Calculates a random number between 500 and 3000
+	ul p1 = (rand() % 2500 + 500);                            
+	ul p2 = (rand() % 2500 + 500);                            
 
-	unsigned long p = encryption1.kthPrime(nthRandPrime1);                                                         // using the random number to get the nth prime
-	unsigned long q = encryption1.kthPrime(nthRandPrime2);                                                         // using the random number to get the nth prime
+	//Calculate the p1-th and p2-th prime numbers for the encryption
+	//Prime numbers are generated randomly
+	ul p = encryption1.calculatePrime(p1);                                                         
+	ul q = encryption1.calculatePrime(p2);                                                         
 
-	std::cout << "p (a random prime):    " << p << std::endl;                                          // printing the nth prime p
-	std::cout << "q (a random prime):    " << q << std::endl;                                          // printing the nth prime q
+	//Display prime numbers
+	cout << "p (a random prime):    " << p << std::endl;                                          
+	cout << "q (a random prime):    " << q << std::endl;                                          
 
-	unsigned long long n = p * q;                                                                      // calculating n = p * q
+	//Calculates n based of the values of p and q
+	ull n = p * q;                                                                      
 
-	unsigned long long totient = (p - 1) * (q - 1);                                                      // calculating phi = (p - 1) * (q - 1)
+	//Calculating phi basede off the values of p and q
+	ull phi = (p - 1) * (q - 1);                                                      
 
-	unsigned long long e_coPrime = encryption1.kthPrime(std::rand() % totient);                                    // calculating e which is a prime between 1 and phi
+	//Calculation e by generating a random number between 1 and phi
+	ull e = encryption1.calculatePrime(rand() % phi);                                    
 
-	unsigned long long d = encryption1.modInverse(e_coPrime, totient);                                             // calculating modular multiplicative inverse using e and phi
+	//D is calculated by finding the mod inverse of e and phi
+	ull d = encryption1.modInverse(e, phi);                                             
 
-	std::cout << "Public Key  (e , n):   (" << e_coPrime << " , " << n << " )" << std::endl;           // printing public key generated
-	std::cout << "Private Key (d , n):   (" << d << " , " << n << " ) " << std::endl;                  // printing private key generated
+	//Displaying the public and private key generated from the calculations above
+	cout << "Public Key  (e , n):   (" << e << " , " << n << " )" << endl;          
+	cout << "Private Key (d , n):   (" << d << " , " << n << " ) " << endl;
 
-	std::vector<unsigned long long> encryptedMsg = encryption1.encrypt_decrypt(messageBlks, n, e_coPrime);           // encrypting the message using message blocks, n and e
+	//Encyrpts the message based on the values of n and e as well as the content of the message blocks vector
+	vector<ull> encryptedMsg = encryption1.encrypt_decrypt(messageBlks, n, e);           
 
-	std::cout << "Encrypted Message:     ";                                                            // displaying the encrypted message
+	//Displays the encrpyted vector
+	cout << "Encrypted Message:     ";                                                            
 	encryption1.displayULL(encryptedMsg, 1);
-	std::cout << std::endl;
+	cout << std::endl;
 
-	std::vector<unsigned long long> decryptedMsg = encryption1.encrypt_decrypt(encryptedMsg, n, d);               // decrypting the message using the encrypted numbers, n and d
+	//Send the encrpyted message along with the values n and d for it to be decrypted 
+	vector<ull> decryptedMsg = encryption1.encrypt_decrypt(encryptedMsg, n, d);              
 
-	std::cout << "Decrypted Message:     ";                                                           // displaying the decrypted message
+	//Displaying the decrypted message
+	cout << "Decrypted Message:     ";                                                           
 	encryption1.displayULL(decryptedMsg, 1);
-	std::cout << std::endl;
+	cout << std::endl;
 
-	if (messageVector1.size() % 2 == 0) {                                                                // breaking message blocks into smaller number values to be converted into characters
-		for (std::vector<unsigned long long>::iterator it = decryptedMsg.begin(); it != decryptedMsg.end(); it = it + 1)
+	// Alters the values back to smaller values that can be convert to chars
+
+	if (messageVector1.size() % 2 == 0) {                                                                
+		for (vector<ull>::iterator it = decryptedMsg.begin(); it != decryptedMsg.end(); it = it + 1)
 		{
 			if (*it > 99)
 			{
@@ -105,7 +128,7 @@ int main() {
 	}
 
 	else {
-		std::vector<unsigned long long>::iterator it = decryptedMsg.begin();
+		vector<ull>::iterator it = decryptedMsg.begin();
 		for (it; it != decryptedMsg.end() - 1; it = it + 1)
 		{
 			if (*it > 99)
@@ -128,21 +151,23 @@ int main() {
 		recoverMessage.push_back(*it / 100);
 	}
 
-	std::cout << "Number values:         ";                                                            // displaying the number values
+	//Display the recovered message from the decryption
+	cout << "Number values:         ";                                                            
 	encryption1.displayInt(recoverMessage, 1);
-	std::cout << std::endl;
+	cout << std::endl;
 
-	std::cout << "Message:               ";
-	for (std::vector<int>::iterator it = recoverMessage.begin(); it != recoverMessage.end(); ++it)
+	//Converts the recovered message back to chars
+	cout << "Message:               ";
+	for (vector<int>::iterator it = recoverMessage.begin(); it != recoverMessage.end(); ++it)
 	{
 		if (char(*it + 65) != '[') {
-			std::cout << "'" << char(*it + 65) << "'" << " ";
+			cout << "'" << char(*it + 65) << "'" << " ";
 		}
 		else {
-			std::cout << "'" << " " << "'" << " ";
+			cout << "'" << " " << "'" << " ";
 		}
 	}
-	std::cout << std::endl;
+	cout << endl;
 
 	return 0;
 }
